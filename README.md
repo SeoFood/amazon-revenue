@@ -8,7 +8,7 @@ Installation
 You only need git and php running to install as standalone library:
 
 ```sh
-$ git clone git://github.com/SeoFood/amazon-revenue.git
+$ git clone git://github.com/SeoFood/amazon-revenue.git && cd amazon-revenue
 $ php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
 $ composer update
 ```
@@ -37,7 +37,7 @@ You find some examples in the [examples](https://github.com/SeoFood/amazon-reven
 License
 ------------
 
-This bundle is under the [MIT license](https://github.com/SeoFood/amazon-revenue/blob/master/LICENSE).
+This class is under the [MIT license](https://github.com/SeoFood/amazon-revenue/blob/master/LICENSE).
 
 Support or Contact
 ------------
