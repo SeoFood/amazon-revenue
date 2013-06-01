@@ -79,31 +79,39 @@ class Client
     {
         try {
             // send a request before the login to accept session cookies
-            $this->_client->get('')->send();
+            $res = $this->_client->get('')->send();
+
+            $body = $res->getBody(true);
+            preg_match('~name="widgetToken" value="([^"]+)"~', $body, $widgetToken);
+            preg_match('~name="sign_in" action=([^\s]+)~', $body, $formAction);
 
             // login
             $request = $this->_client->post(
-                'gp/flex/sign-in/select.html',
+                $formAction[1],
                 null,
                 array(
-                     'email'    => $this->_username,
+                     'username' => $this->_username,
                      'password' => $this->_password,
                      'action'   => 'sign-in',
                      'mode'     => 1,
-                     'query'    => 'returl=/gp/associates/network/reports/report.html',
-                     'path'     => '/gp/associates/login/login.html'
+                     'query'    => 'returl=/gp/associates/network/reports/report.html&retquery=',
+                     'path'     => '/gp/associates/login/login.html',
+                     'rememberMe' => false,
+                     'widgetToken' => $widgetToken[1]
+
                 )
             );
-            $response = $request->send();
+            $request->send();
         } catch (ServerErrorResponseException $e) {
             throw new Exception($e->getMessage());
         }
 
+        $response = $this->_client->get('gp/associates/network/reports/report.html')->send();
         $body = $response->getBody(true);
 
         // always deactivate combine buttons
         if (strstr($body, 'name="combinedReports" checked="checked"')) {
-            $this->_client->get('gp/associates/x-site/combinedReports.html');
+            $this->_client->get('gp/associates/x-site/combinedReports.html')->send();
         }
     }
 
