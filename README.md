@@ -1,4 +1,7 @@
 ## Amazon Revenue PHP Class
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6c646f0a7c0d499c86dc5dcb8535d14d)](https://www.codacy.com/app/SeoFood/amazon-revenue?utm_source=github.com&utm_medium=referral&utm_content=SeoFood/amazon-revenue&utm_campaign=badger)
+
 Fetch revenue shares and items you sold over the amazon affiliate program.
 
 Installation
