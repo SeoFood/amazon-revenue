@@ -1,6 +1,9 @@
 ## Amazon Revenue PHP Class
 
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/?branch=master)[![Code Coverage](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/?branch=master)[![Build Status](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/build.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/build-status/master)[![Build Status](https://travis-ci.org/SeoFood/amazon-revenue.svg?branch=master)](https://travis-ci.org/SeoFood/amazon-revenue)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/badges/build.png?b=master)](https://scrutinizer-ci.com/g/SeoFood/amazon-revenue/build-status/master)
+[![Build Status](https://travis-ci.org/SeoFood/amazon-revenue.svg?branch=master)](https://travis-ci.org/SeoFood/amazon-revenue)
 
 Fetch revenue shares and items you sold over the amazon affiliate program.
 
@@ -32,8 +35,10 @@ If you already have composer the installation is much simpler. Add this bundle t
 $ git fetch && composer update
 ```
 
-Examples
+Examples`
 ------------
+`cp .env.example .env` 
+Fill out the credentials in the .env File
 
 You find some examples in the [examples](https://github.com/SeoFood/amazon-revenue/blob/master/examples) folder.
 
