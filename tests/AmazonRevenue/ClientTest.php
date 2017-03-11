@@ -1,14 +1,23 @@
 <?php
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+namespace Tests\AmazonRevenue;
+
+use Exception;
+use PHPUnit\Framework\TestCase;
+use SeoFood\AmazonRevenue\Client;
+
+class ClientTest extends TestCase
 {
-   public function testClient()
-   {
+    /**
+     * @test
+     */
+    public function it_tests_that_the_client_can_be_created()
+    {
         try {
-            new \AmazonRevenue\Client('test', 'test');
+            new Client(getenv('USERNAME'), getenv('PASSWORD'));
             $this->assertTrue(true);
         } catch (Exception $e) {
             $this->assertTrue(false);
         }
-   }
+    }
 }

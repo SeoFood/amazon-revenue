@@ -1,51 +1,48 @@
 <?php
-namespace AmazonRevenue;
 
-use Guzzle\Http\Client as HttpClient;
-use Guzzle\Http\Exception\ServerErrorResponseException;
-use Guzzle\Plugin\Cookie\CookiePlugin;
-use Guzzle\Plugin\Cookie\CookieJar\ArrayCookieJar;
-use AmazonRevenue\Item;
-use AmazonRevenue\Exception;
+namespace SeoFood\AmazonRevenue;
+
+use Goutte\Client as HttpCrawler;
+use GuzzleHttp\Client as HttpClient;
 
 class Client
 {
     /**
      * @var array
      */
-    private $_hostNames = array(
+    private $hostNames = [
         'DE' => 'partnernet.amazon.de'
-    );
+    ];
 
     /**
-     * @var HttpClient
+     * @var HttpCrawler
      */
-    private $_client;
-
-    /**
-     * @var String
-     */
-    private $_username;
+    private $client;
 
     /**
      * @var String
      */
-    private $_password;
+    private $username;
 
     /**
      * @var String
      */
-    private $_host;
+    private $password;
 
     /**
      * @var String
      */
-    private $_country;
+    private $host;
+
+    /**
+     * @var String
+     */
+    private $country;
 
     /**
      * @var string
      */
-    private $_associateTag;
+    private $associateTag;
 
     /**
      * @param string $username
@@ -56,65 +53,59 @@ class Client
      */
     public function __construct($username, $password, $country = 'DE')
     {
-        $this->_username    = $username;
-        $this->_password    = $password;
-        $this->_country     = $country;
+        $this->username = $username;
+        $this->password = $password;
+        $this->country = $country;
 
-        if (!array_key_exists($country, $this->_hostNames)) {
+        if (! array_key_exists($country, $this->hostNames)) {
             throw new Exception('No hostname for the given country available.');
         }
-        $this->_host = $this->_hostNames[$country];
+        $this->host = 'https://' . $this->hostNames[$country] . '/';
 
-        $this->_client = new HttpClient('https://' . $this->_host . '/');
-        $this->_client->setSslVerification(false, false, 0);
-        $this->_client->setUserAgent('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17', true);
+        $ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17';
+        $this->client = new HttpCrawler;
+        $this->client->setClient(new HttpClient([
+            'cookies' => true,
+            'debug' => false,
+            'headers' => [
+                'User-Agent' => $ua,
+                'Accept-Language' => 'de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4'
+            ]
+        ]));
 
-        $cookiePlugin = new CookiePlugin(new ArrayCookieJar());
-        $this->_client->addSubscriber($cookiePlugin);
-
-        $this->_login();
+        $this->login();
     }
 
-    private function _login()
+    private function login()
     {
-        try {
-            // send a request before the login to accept session cookies
-            $res = $this->_client->get('')->send();
+        // send a request before the login to accept session cookies
+        $crawler = $this->client->request('GET', $this->host);
 
-            $body = $res->getBody(true);
-            preg_match('~name="widgetToken" value="([^"]+)"~', $body, $widgetToken);
-            preg_match('~name="sign_in" action=([^\s]+)~', $body, $formAction);
+        // login
+        $form = $crawler->filter('form[name="sign_in"]')->form();
+        $form['username'] = $this->username;
+        $form['password'] = $this->password;
+        $form['rememberMe'] = false;
 
-            // login
-            $request = $this->_client->post(
-                $formAction[1],
-                null,
-                array(
-                     'username' => $this->_username,
-                     'password' => $this->_password,
-                     'action'   => 'sign-in',
-                     'mode'     => 1,
-                     'query'    => 'returl=/gp/associates/network/reports/report.html&retquery=',
-                     'path'     => '/gp/associates/login/login.html',
-                     'rememberMe' => false,
-                     'widgetToken' => $widgetToken[1]
+        $this->client->submit($form);
 
-                )
-            );
-            $request->send();
-        } catch (ServerErrorResponseException $e) {
-            throw new Exception($e->getMessage());
-        }
-
-        $response = $this->_client->get('gp/associates/network/reports/report.html')->send();
-        $body = $response->getBody(true);
-
-        // always deactivate combine buttons
-        if (strstr($body, 'name="combinedReports" checked="checked"')) {
-            $this->_client->get('gp/associates/x-site/combinedReports.html')->send();
-        }
+        $this->deactivateCombinedReports();
     }
 
+    /**
+     * @param $id
+     */
+    public function setStore($id)
+    {
+        $crawler = $this->client->request('GET', $this->host . 'gp/associates/network/reports/report.html');
+
+        $form = $crawler->filter('form[name="idbox_store_id_form"]')->form();
+        $form['idbox_store_id'] = $id;
+        $this->client->submit($form);
+
+        $this->deactivateCombinedReports();
+    }
+    
     /**
      * @param \DateTime $start
      * @param \DateTime $end
@@ -122,25 +113,23 @@ class Client
      */
     public function getItems(\DateTime $start, \DateTime $end)
     {
-        $xml = $this->_client->get($this->_getTransactionUrl($start, $end))
-            ->send()
-            ->xml();
+        $xml = $this->client->request('GET', $this->_getTransactionUrl($start, $end));
 
-        $items = array();
-        foreach ($xml->Items->Item as $item) {
-            $amazonItem = new Item();
+        $items = [];
+        $xml->filter('Items Item')->each(function ($item) use (&$items) {
+            $amazonItem = new Item;
 
-            $amazonItem->setAsin((string)$item['ASIN']);
-            $amazonItem->setEDate((string)$item['EDate']);
-            $amazonItem->setType((string)$item['Type']);
-            $amazonItem->setPrice((float)str_replace(',', '.', (string)$item['Price']));
-            $amazonItem->setCommission((float)str_replace(',', '.', (string)$item['Earnings']));
-            $amazonItem->setName((string)$item['Title']);
-            $amazonItem->setQuantity((int)$item['Qty']);
-            $amazonItem->setDate(new \DateTime((string)$item['Date']));
+            $amazonItem->setAsin((string)$item->attr('ASIN'));
+            $amazonItem->setEDate((string)$item->attr('EDate'));
+            $amazonItem->setType((string)$item->attr('LinkType'));
+            $amazonItem->setPrice((float)str_replace(',', '.', (string)$item->attr('Price')));
+            $amazonItem->setCommission((float)str_replace(',', '.', (string)$item->attr('Earnings')));
+            $amazonItem->setName((string)$item->attr('Title'));
+            $amazonItem->setQuantity((int)$item->attr('Qty'));
+            $amazonItem->setDate(new \DateTime((string)$item->attr('Date')));
 
             $items[] = $amazonItem;
-        }
+        });
 
         return $items;
     }
@@ -152,16 +141,16 @@ class Client
      */
     private function _getTransactionUrl(\DateTime $start, \DateTime $end)
     {
-        $url = 'gp/associates/network/reports/report.html?__mk_de_%s=ÅMÅZÕÑ&idbox_tracking_id=%s&reportType=earningsReport&program=all&preSelectedPeriod=monthToDate&periodType=exact&startDay=%d&startMonth=%d&startYear=%d&endDay=%d&endMonth=%d&endYear=%d&submit.download_XML.x=84&submit.download_XML.y=4&submit.download_XML=Bericht+herunterladen+(XML)';
+        $url = $this->host . 'gp/associates/network/reports/report.html?__mk_de_%s=ÅMÅZÕÑ&idbox_tracking_id=%s&reportType=earningsReport&program=all&preSelectedPeriod=monthToDate&periodType=exact&startDay=%d&startMonth=%d&startYear=%d&endDay=%d&endMonth=%d&endYear=%d&submit.download_XML.x=84&submit.download_XML.y=4&submit.download_XML=Bericht+herunterladen+(XML)';
 
         return sprintf($url,
-            strtolower($this->_country),
-            $this->_associateTag,
+            strtolower($this->country),
+            $this->associateTag,
             $start->format('j'),
-            $start->format('n')-1,
+            $start->format('n') - 1,
             $start->format('Y'),
             $end->format('j'),
-            $end->format('n')-1,
+            $end->format('n') - 1,
             $end->format('Y'));
     }
 
@@ -170,6 +159,20 @@ class Client
      */
     public function setAssociateTag($tag)
     {
-        $this->_associateTag = $tag;
+        $this->associateTag = $tag;
+    }
+
+    /**
+     */
+    private function deactivateCombinedReports()
+    {
+        $crawler = $this->client->request('GET', $this->host . 'gp/associates/network/reports/report.html');
+
+        // always deactivate combine buttons
+        if ($crawler->filter('input[name="combinedReports"]')->attr('checked') === 'checked') {
+            $form = $crawler->filter('form[name="idbox_combined_reports_form"]')->form();
+            $form['combinedReports'] = false;
+            $this->client->submit($form);
+        }
     }
 }

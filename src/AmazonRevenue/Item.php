@@ -1,7 +1,6 @@
 <?php
-namespace AmazonRevenue;
 
-
+namespace SeoFood\AmazonRevenue;
 
 class Item
 {
@@ -36,7 +35,7 @@ class Item
     private $_name;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_quantity;
 

@@ -1,0 +1,31 @@
+filter:
+  paths:
+    - 'src/*'
+
+checks:
+  php:
+    code_rating: true
+    duplication: true
+
+coding_style:
+  php:
+    spaces:
+      around_operators:
+        concatenation: true
+        negation: true
+      other:
+        after_type_cast: false
+
+build:
+  environment:
+
+  tests:
+    before:
+      - cp .env.example .env
+
+    override:
+      -
+        command: 'vendor/bin/phpunit --coverage-clover=coverage-phpunit'
+        coverage:
+          file: 'coverage-phpunit'
+          format: 'clover'

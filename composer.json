@@ -1,25 +1,37 @@
 {
-    "name": "seofood/amazon-revenue",
-    "type": "library",
-    "description": "A PHP Class the get the Revenue from the Amazon Partner Network (Affiliate program)",
-    "keywords": ["amazon", "affiliate"],
-    "homepage": "http://seofood.de/",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Marco Hillger",
-            "email": "marco@seofood.de"
-        }
-    ],
-    "require": {
-        "php": ">=5.3",
-        "guzzle/guzzle": "~3.1"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "3.7.*"
-    },
-    "autoload": {
-        "psr-0": { "AmazonRevenue": "src/" }
-    },
-    "minimum-stability": "dev"
+  "name": "seofood/amazon-revenue",
+  "type": "library",
+  "description": "A PHP Class the get the Revenue from the Amazon Partner Network (Affiliate program)",
+  "keywords": [
+    "amazon",
+    "affiliate"
+  ],
+  "homepage": "http://seofood.de/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Marco Hillger",
+      "email": "marco@seofood.de"
+    }
+  ],
+  "require": {
+    "php": ">=5.4",
+    "guzzlehttp/guzzle": "^6.2",
+    "vlucas/phpdotenv": "^2.4",
+    "fabpot/goutte": "^3.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SeoFood\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "stable"
 }
