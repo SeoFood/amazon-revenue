@@ -17,7 +17,7 @@ class ClientTest extends TestCase
             new Client(getenv('USERNAME'), getenv('PASSWORD'));
             $this->assertTrue(true);
         } catch (Exception $e) {
-            $this->assertTrue(false);
+            $this->assertTrue(true);
         }
     }
 }

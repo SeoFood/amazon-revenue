@@ -17,7 +17,9 @@ coding_style:
         after_type_cast: false
 
 build:
-  environment:
+ environment:
+  php:
+    version: 7.0.8
 
   tests:
     before:
